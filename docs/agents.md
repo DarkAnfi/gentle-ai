@@ -11,8 +11,9 @@
 | Gemini CLI | `gemini-cli` | Yes | Yes | Yes (experimental) | No | No | `~/.gemini` |
 | Cursor | `cursor` | Yes | Yes | Yes | No | No | `~/.cursor` |
 | VS Code Copilot | `vscode-copilot` | Yes | Yes | Yes | No | No | `~/.copilot` + VS Code User profile |
+| Antigravity | `antigravity` | Yes | Yes | No (simulated) | No | No | `~/.gemini/antigravity` |
 
-All agents receive the **full SDD orchestrator** (agent-teams-lite) injected into their system prompt, plus skill files written to their skills directory. Every agent supports sub-agent delegation natively, enabling the full SDD orchestration workflow with parallel sub-agents.
+All agents receive the **full SDD orchestrator** (agent-teams-lite) injected into their system prompt, plus skill files written to their skills directory. Every agent supports sub-agent delegation natively, enabling the full SDD orchestration workflow with parallel sub-agents, except for **Antigravity** which simulates Multi-Agent delegation via file-loading capabilities inline.
 
 ## Notes
 

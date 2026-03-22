@@ -205,6 +205,15 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, mod
 				files = append(files, path)
 			}
 		}
+
+		if adapter.Agent() == model.AgentAntigravity {
+			skillsTxtPath := filepath.Join(adapter.GlobalConfigDir(homeDir), "skills.txt")
+			skillsTxtContent := []byte(skillDir + "\n")
+			if writeResult, err := filemerge.WriteFileAtomic(skillsTxtPath, skillsTxtContent, 0o644); err == nil {
+				changed = changed || writeResult.Changed
+				files = append(files, skillsTxtPath)
+			}
+		}
 	}
 
 	// 4. Post-injection verification — catch silent failures.

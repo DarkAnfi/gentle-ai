@@ -78,6 +78,15 @@ func Inject(homeDir string, adapter agents.Adapter, skillIDs []model.SkillID) (I
 		paths = append(paths, path)
 	}
 
+	if adapter.Agent() == model.AgentAntigravity {
+		skillsTxtPath := filepath.Join(adapter.GlobalConfigDir(homeDir), "skills.txt")
+		skillsTxtContent := []byte(skillDir + "\n")
+		if writeResult, err := filemerge.WriteFileAtomic(skillsTxtPath, skillsTxtContent, 0o644); err == nil {
+			changed = changed || writeResult.Changed
+			paths = append(paths, skillsTxtPath)
+		}
+	}
+
 	return InjectionResult{Changed: changed, Files: paths, Skipped: skipped}, nil
 }
 
