@@ -1480,6 +1480,7 @@ func TestSDDOrchestratorAssetSelection(t *testing.T) {
 		{agent: model.AgentOpenCode, want: "generic/sdd-orchestrator.md"},
 		{agent: model.AgentCursor, want: "generic/sdd-orchestrator.md"},
 		{agent: model.AgentVSCodeCopilot, want: "generic/sdd-orchestrator.md"},
+		{agent: model.AgentAntigravity, want: "antigravity/sdd-orchestrator.md"},
 	}
 
 	for _, tt := range tests {
@@ -1792,5 +1793,59 @@ func TestMergeJSONFileReturnsMergedBytes(t *testing.T) {
 	// writeResult must reflect that the file was changed.
 	if !result.writeResult.Changed {
 		t.Fatal("writeResult.Changed = false — first write of different content should be changed")
+	}
+}
+
+func TestInjectAntigravityWritesSDDOrchestratorAndSkills(t *testing.T) {
+	home := t.TempDir()
+
+	antigravityAdapter, err := agents.NewAdapter("antigravity")
+	if err != nil {
+		t.Fatalf("NewAdapter(antigravity) error = %v", err)
+	}
+
+	result, injectErr := Inject(home, antigravityAdapter, "")
+	if injectErr != nil {
+		t.Fatalf("Inject(antigravity) error = %v", injectErr)
+	}
+
+	if !result.Changed {
+		t.Fatal("Inject(antigravity) changed = false")
+	}
+
+	// 1. Verify SDD orchestrator was injected into GEMINI.md.
+	// Antigravity.SystemPromptFile is home/.gemini/GEMINI.md
+	promptPath := filepath.Join(home, ".gemini", "GEMINI.md")
+	content, readErr := os.ReadFile(promptPath)
+	if readErr != nil {
+		t.Fatalf("ReadFile(%q) error = %v", promptPath, readErr)
+	}
+
+	text := string(content)
+	if !strings.Contains(text, "Single Agent SDD Orchestrator for Antigravity") {
+		t.Fatal("Antigravity system prompt missing SDD orchestrator content")
+	}
+
+	// 2. Verify skills.txt was written with the skills directory path.
+	skillsTxtPath := filepath.Join(home, ".gemini", "antigravity", "skills.txt")
+	skillsTxtContent, readErr := os.ReadFile(skillsTxtPath)
+	if readErr != nil {
+		t.Fatalf("ReadFile(%q) error = %v", skillsTxtPath, readErr)
+	}
+	expectedSkillsDir := filepath.Join(home, ".gemini", "antigravity", "skills")
+	if !strings.Contains(string(skillsTxtContent), expectedSkillsDir) {
+		t.Fatalf("skills.txt content mismatch: got %q, want it to contain %q", string(skillsTxtContent), expectedSkillsDir)
+	}
+
+	// 3. Verify SDD skill files were written.
+	skillPath := filepath.Join(home, ".gemini", "antigravity", "skills", "sdd-init", "SKILL.md")
+	if _, err := os.Stat(skillPath); err != nil {
+		t.Fatalf("expected SDD skill file %q: %v", skillPath, err)
+	}
+
+	// 4. Verify shared files were written.
+	sharedPath := filepath.Join(home, ".gemini", "antigravity", "skills", "_shared", "engram-convention.md")
+	if _, err := os.Stat(sharedPath); err != nil {
+		t.Fatalf("expected shared SDD convention file %q: %v", sharedPath, err)
 	}
 }
